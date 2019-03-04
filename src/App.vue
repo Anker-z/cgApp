@@ -4,9 +4,6 @@
     <div v-transfer-dom>
       <loading v-model="isLoading"></loading>
     </div>
-    <div v-transfer-dom>
-      <actionsheet :menus="menus" v-model="showMenu" @on-click-menu="changeLocale"></actionsheet>
-    </div>
 
     <drawer
       width="200px;"
@@ -58,18 +55,30 @@
           v-show="!isTabbarDemo && isShowBar"
           slot="bottom"
         >
-          <tabbar-item :link="{path:'/'}" selected>
+          <tabbar-item :link="{path:'/',replace:true} " selected>
             <span
               class="demo-icon-22 vux-demo-tabbar-icon-home"
               slot="icon"
               style="position:relative;top: -2px;"
-            >&#xe637;</span>
-            <span slot="label">Home</span>
+            >&#xe8f2;</span>
+            <span slot="label">首页</span>
           </tabbar-item>
-          <tabbar-item :link="{path:'/demo'}" :selected="isDemo" badge="9">
-            <span class="demo-icon-22" slot="icon">&#xe633;</span>
+          <tabbar-item :link="{path:'/classly',replace:true}" :selected="isSelect('/classly')">
+            <span class="demo-icon-22" slot="icon">&#xe634;</span>
             <span slot="label">
-              <span>Demos</span>
+              <span>分类</span>
+            </span>
+          </tabbar-item>
+          <tabbar-item :link="{path:'/user',replace:true}" :selected="isSelect('/user')">
+            <span class="demo-icon-22" slot="icon">&#xe635;</span>
+            <span slot="label">
+              <span>我的</span>
+            </span>
+          </tabbar-item>
+          <tabbar-item :link="{path:'/setting',replace:true}" :selected="isSelect('/setting')">
+            <span class="demo-icon-22" slot="icon">&#xe636;</span>
+            <span slot="label">
+              <span>设置</span>
             </span>
           </tabbar-item>
         </tabbar>
@@ -95,10 +104,10 @@ import {
   Loading,
   TransferDom
 } from "vux";
-import { mapState, mapActions } from "vuex";
+
 import store from "./store";
+import { mapState, mapActions } from "vuex";
 import router from "./router";
-import { debug } from "util";
 export default {
   directives: {
     TransferDom
@@ -119,6 +128,9 @@ export default {
     Actionsheet
   },
   methods: {
+    isSelect(path) {
+      return path == this.path;
+    },
     onShowModeChange(val) {
       /** hide drawer before changing showMode **/
       this.drawerVisibility = false;
@@ -155,32 +167,28 @@ export default {
   },
   watch: {
     path(path) {
-      if (path === "/component/demo") {
-        this.$router.replace("/demo");
+      console.log(path);
+      if (path === "/") {
+        this.$router.replace("/home");
+        return;
+      } else {
+        this.$router.replace("/" + path);
         return;
       }
-      if (path === "/demo") {
-        setTimeout(() => {
-          this.box = document.querySelector("#demo_list_box");
-          if (this.box) {
-            this.box.removeEventListener("scroll", this.handler, false);
-            this.box.addEventListener("scroll", this.handler, false);
-          }
-        }, 1000);
+    },
+    $route(to, from) {
+      this.thisRoute = to;
+      this.direction = store.state.direction;
+      if (this.direction === "forward") {
+        //this.headerTransition = "slide-left";
+        this.viewTransition = "vux-pop-in";
       } else {
-        this.box && this.box.removeEventListener("scroll", this.handler, false);
+        //this.headerTransition = "slide-right";
+        this.viewTransition = "vux-pop-out";
       }
     }
   },
   computed: {
-    // ...mapState({
-    //   route: store.state.route,
-    //   path: store.route.path,
-    //   deviceready: store.state.app.deviceready,
-    //   demoTop: store.state.vux.demoScrollTop,
-    //   isLoading: store.state.vux.isLoading,
-    //   direction: store.state.vux.direction
-    // }),
     isShowBar() {
       if (this.entryUrl.indexOf("hide-tab-bar") > -1) {
         return false;
@@ -203,49 +211,46 @@ export default {
         showMore: true
       };
     },
-    headerTransition() {
-      //   if (!this.direction) return "";
-      //   return this.direction === "forward"
-      //     ? "vux-header-fade-in-right"
-      //     : "vux-header-fade-in-left";
-    },
+    // headerTransition() {
+    //   if (!this.direction) return "";
+    //   return this.direction === "forward"
+    //     ? "vux-header-fade-in-right"
+    //     : "vux-header-fade-in-left";
+    // },
 
-    isDemo() {
-      //return /component|demo/.test(this.route.path);
-    },
     isTabbarDemo() {
       //return /tabbar/.test(this.route.path);
     },
     title() {
       //console.log(name);
-      return this.thisRoute.name;
-    },
-    viewTransition() {
-      //   if (!this.direction) return "";
-      //   return "vux-pop-" + (this.direction === "forward" ? "in" : "out");
+      return this.$route.name;
     }
+    // viewTransition() {
+    //   // if (!this.direction) return "";
+    //   console.log(this.direction);
+    //   return "vux-pop-" + (this.direction === "forward" ? "in" : "out");
+    //   //return "vux-pop-out";
+    // }
   },
   data() {
     return {
       entryUrl: document.location.href,
       showMenu: false,
-      menus: {
-        "language.noop": '<span class="menu-title">Language</span>',
-        "zh-CN": "中文",
-        en: "English"
-      },
       drawerVisibility: false,
       showMode: "push",
       showModeValue: "push",
       showPlacement: "left",
       showPlacementValue: "left",
 
-      thisRoute: store.state.route,
+      //thisRoute: $route.path,
       path: this.$route.path,
       //deviceready: store.state.app.deviceready,
       demoTop: store.state.demoScrollTop,
       isLoading: store.state.isLoading,
-      direction: store.state.direction
+      direction: "",
+
+      viewTransition: "vux-pop-in",
+      headerTransition: "vux-header-fade-in-right"
     };
   }
 };
@@ -332,7 +337,7 @@ body {
 .vux-pop-in-enter-active,
 .vux-pop-in-leave-active {
   will-change: transform;
-  transition: all 500ms;
+  transition: all 300ms;
   height: 100%;
   top: 46px;
   position: absolute;
@@ -354,8 +359,5 @@ body {
 .vux-pop-in-leave-active {
   opacity: 0;
   transform: translate3d(-100%, 0, 0);
-}
-.menu-title {
-  color: #888;
 }
 </style>

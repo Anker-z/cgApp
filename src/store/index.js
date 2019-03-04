@@ -9,7 +9,7 @@ const store = new Vuex.Store({
         demoScrollTop: 0,
         isLoading: false,
         router: "",
-        direction: shouldUseTransition ? 'forward' : ''
+        direction: 'forward'
     },
     mutations: {
         updateDemoPosition(state, payload) {
@@ -22,9 +22,9 @@ const store = new Vuex.Store({
             state.isLoading = payload.isLoading
         },
         updateDirection(state, payload) {
-            if (!shouldUseTransition) {
-                return
-            }
+            // if (!shouldUseTransition) {
+            //     return
+            // }
             state.direction = payload.direction
         }
     },
